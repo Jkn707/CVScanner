@@ -1,14 +1,21 @@
 const express = require('express');
-const bcrypt = require('bcryptjs'); // Importar bcrypt para el hash de contraseñas
+const bcrypt = require('bcryptjs');
 const router = express.Router();
 const User = require('../models/User');
+
+// Función de logger mejorada
+function logRequest(message, data) {
+  console.log(`========== ${message} ==========`);
+  console.log(JSON.stringify(data, null, 2));
+  console.log('================================');
+}
 
 // POST /api/users → Registrar nuevo usuario
 router.post('/', async (req, res) => {
   try {
     const { document, password, confirmPassword } = req.body;
 
-    console.log('Datos recibidos:', req.body); // Verificar qué datos llegan
+    logRequest('Datos recibidos en registro', req.body);
 
     // Verificar que todos los campos estén presentes
     if (!document || !password || !confirmPassword) {
@@ -38,19 +45,18 @@ router.post('/', async (req, res) => {
     const newUser = new User({ document, password: hashedPassword });
     await newUser.save();
 
+    logRequest('Usuario registrado', { document });
     res.status(201).json({ message: 'Usuario registrado exitosamente' });
   } catch (error) {
-    console.error(error);
+    console.error('Error en registro:', error);
     res.status(500).json({ message: 'Error del servidor', error: error.message });
   }
 });
 
 // POST /api/users/login → Iniciar sesión de usuario
 router.post('/login', async (req, res) => {
-  console.log("Datos recibidos en el backend:", req.body);
-
   try {
-    console.log("Datos recibidos en login:", req.body);
+    logRequest('Datos recibidos en login', req.body);
 
     const { document, password } = req.body;
 
@@ -60,17 +66,20 @@ router.post('/login', async (req, res) => {
 
     const user = await User.findOne({ document });
     if (!user) {
+      console.log(`Login fallido: Usuario con documento ${document} no encontrado`);
       return res.status(400).json({ message: 'Usuario no encontrado' });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
+      console.log(`Login fallido: Contraseña incorrecta para documento ${document}`);
       return res.status(400).json({ message: 'Contraseña incorrecta' });
     }
 
+    console.log(`Login exitoso: Usuario con documento ${document}`);
     res.status(200).json({ message: 'Inicio de sesión exitoso' });
   } catch (error) {
-    console.error(error);
+    console.error('Error en login:', error);
     res.status(500).json({ message: 'Error del servidor', error: error.message });
   }
 });

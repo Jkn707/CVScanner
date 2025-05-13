@@ -6,7 +6,7 @@ async function main() {
   await connect();
 
   // Inicialización del servidor Express
-  await app.listen(4000, '0.0.0.0');
+  await app.listen(4000, '192.168.56.1');
   console.log('Server on port 4000: Connected');
 }
 

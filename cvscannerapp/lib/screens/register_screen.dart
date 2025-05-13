@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'dart:io';
+import 'dart:async';
 import 'scan_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-
-
+import '../globals.dart' as globals;
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -16,7 +17,16 @@ class RegisterScreen extends StatefulWidget {
 class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _documentController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // For debugging, print the configured IP
+    print('Server IP for Register: ${dotenv.env['ip']}');
+  }
 
   @override
   void dispose() {
@@ -27,7 +37,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Future<void> _registerUser() async {
-    if (_documentController.text.isEmpty || _passwordController.text.isEmpty || _confirmPasswordController.text.isEmpty) {
+    if (_documentController.text.isEmpty ||
+        _passwordController.text.isEmpty ||
+        _confirmPasswordController.text.isEmpty) {
       _showSnackBar('Por favor, completa todos los campos');
       return;
     }
@@ -42,7 +54,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
-    final url = Uri.parse('http://${dotenv.env['ip']}/api/users');
+    setState(() => _isLoading = true);
+
+    final ipAddress = dotenv.env['ip'];
+    if (ipAddress == null || ipAddress.isEmpty) {
+      _showSnackBar(
+        'Error de configuración: IP no definida en el archivo .env',
+      );
+      setState(() => _isLoading = false);
+      return;
+    }
+
+    final url = Uri.parse('http://$ipAddress/api/users');
 
     final body = {
       "document": _documentController.text.trim(),
@@ -50,18 +73,51 @@ class _RegisterScreenState extends State<RegisterScreen> {
       "confirmPassword": _confirmPasswordController.text,
     };
 
-    final response = await http.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(body),
-    );
+    try {
+      print('Enviando solicitud de registro a: $url');
+      print(
+        'Datos: {"document": "${_documentController.text.trim()}", "password": "****", "confirmPassword": "****"}',
+      );
 
-    if (response.statusCode == 201) {
-      _showSnackBar('Usuario registrado exitosamente', Colors.green);
-      _navigateToHome(context);
-    } else {
-      final data = jsonDecode(response.body);
-      _showSnackBar(data['message'] ?? 'Error al registrar usuario');
+      final response = await http
+          .post(
+            url,
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode(body),
+          )
+          .timeout(Duration(seconds: 10));
+
+      print('Respuesta recibida. Status code: ${response.statusCode}');
+      print('Cuerpo de respuesta: ${response.body}');
+
+      if (response.statusCode == 201) {
+        // Guardar el documento del usuario recién registrado
+        globals.loggedInUserDocument = _documentController.text.trim();
+
+        _showSnackBar('Usuario registrado exitosamente', Colors.green);
+
+        // Esperar un momento para que el usuario vea el mensaje de éxito
+        await Future.delayed(Duration(seconds: 1));
+
+        // Navegar a la pantalla principal
+        _navigateToHome(context);
+      } else {
+        final data = jsonDecode(response.body);
+        _showSnackBar(data['message'] ?? 'Error al registrar usuario');
+      }
+    } catch (e) {
+      print('Error de registro: $e');
+      if (e is SocketException) {
+        _showSnackBar(
+          'Error de conexión al servidor. Verifica la IP y que el servidor esté en ejecución.',
+        );
+      } else if (e is TimeoutException) {
+        _showSnackBar('Tiempo de espera agotado. El servidor no responde.');
+      } else {
+        _showSnackBar('Error de registro: ${e.toString()}');
+      }
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 
@@ -77,16 +133,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   void _navigateToHome(BuildContext context) {
-    Navigator.of(context).push(_createRoute());
-  }
-
-  Route _createRoute() {
-    return PageRouteBuilder(
-      pageBuilder: (context, animation, secondaryAnimation) => ScanScreen(),
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        return FadeTransition(opacity: animation, child: child);
-      },
-    );
+    Navigator.of(
+      context,
+    ).pushReplacement(MaterialPageRoute(builder: (context) => ScanScreen()));
   }
 
   @override
@@ -119,7 +168,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     SizedBox(height: 10),
                     Text(
                       "¡Regístrate!",
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     SizedBox(height: 10),
                     Text("Por favor, ingresa tus datos para crear tu cuenta"),
@@ -131,7 +183,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         labelText: 'Documento',
                         filled: true,
                         fillColor: Colors.grey[300],
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
                     ),
                     SizedBox(height: 10),
@@ -142,7 +196,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         labelText: 'Contraseña',
                         filled: true,
                         fillColor: Colors.white,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
                     ),
                     SizedBox(height: 10),
@@ -153,28 +209,41 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         labelText: 'Confirmar contraseña',
                         filled: true,
                         fillColor: Colors.grey[300],
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
                     ),
                     SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: _registerUser,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue[900], // Azul oscuro
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                    _isLoading
+                        ? CircularProgressIndicator()
+                        : ElevatedButton(
+                          onPressed: _registerUser,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue[900], // Azul oscuro
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 40,
+                              vertical: 15,
+                            ),
+                          ),
+                          child: Text(
+                            'Registrarse',
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Colors.white,
+                            ), // Letra blanca
+                          ),
                         ),
-                        padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                      ),
-                      child: Text(
-                        'Registrarse',
-                        style: TextStyle(fontSize: 18, color: Colors.white), // Letra blanca
-                      ),
-                    ),
                     SizedBox(height: 30),
                     Align(
                       alignment: Alignment.bottomRight,
-                      child: Image.asset("assets/images/logo_magneto.png", height: 30),
+                      child: Image.asset(
+                        "assets/images/logo_magneto.png",
+                        height: 30,
+                      ),
                     ),
                   ],
                 ),
