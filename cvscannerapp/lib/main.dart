@@ -31,20 +31,28 @@ class MyApp extends StatelessWidget {
         '/login': (context) => LoginScreen(),
         '/register': (context) => RegisterScreen(),
 
-        // Pantalla para escanear desde archivo
-        '/scanFile': (context) => 
-            Scaffold(body: Center(child: Text('Escanear desde archivo'))),
-
-        // Pantalla para escanear desde cámara (recibe argumentos)
-        '/scanCamera': (context) {
-          final args = ModalRoute.of(context)!.settings.arguments
-              as Map<String, dynamic>?;
-          return CameraScreen(ownerDocument: args?['ownerDocument']);
-        },
-
-        // Escaneos anteriores
-        '/previousScans': (context) =>
-            Scaffold(body: Center(child: Text('Hojas de vida anteriores'))),
+        // Para pantallas que requieren parámetros, usamos onGenerateRoute
+      },
+      onGenerateRoute: (settings) {
+        if (settings.name == '/scanCamera') {
+          final args = settings.arguments as Map<String, dynamic>?;
+          return MaterialPageRoute(
+            builder: (context) => CameraScreen(
+              ownerDocument: args?['ownerDocument'],
+            ),
+          );
+        } else if (settings.name == '/scanFile') {
+          // Asumiendo que FileScreen también necesita parámetros similares
+          return MaterialPageRoute(
+            builder: (context) => FileScreen(),
+          );
+        }
+        // Ruta de fallback para rutas no definidas
+        return MaterialPageRoute(
+          builder: (context) => Scaffold(
+            body: Center(child: Text('Ruta no encontrada')),
+          ),
+        );
       },
     );
   }

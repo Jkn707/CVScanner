@@ -8,9 +8,13 @@ import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:open_file/open_file.dart';
+import '../globals.dart' as globals;
 
+// Update the constructor in lib/screens/camera_screen.dart
 class CameraScreen extends StatefulWidget {
-  const CameraScreen({Key? key}) : super(key: key);
+  final String? ownerDocument;  // Add this parameter
+
+  const CameraScreen({Key? key, this.ownerDocument}) : super(key: key);
 
   @override
   State<CameraScreen> createState() => _CameraScreenState();
@@ -98,7 +102,14 @@ class _CameraScreenState extends State<CameraScreen> {
       final request = http.MultipartRequest('POST', uri);
 
       request.fields['combinedText'] = combinedText;
-      request.fields['ownerDocument'] = dotenv.env['cedula'] ?? 'sin_cedula';
+
+      // Use the ownerDocument from widget if available, otherwise use from dotenv or globals
+      final documentToUse = widget.ownerDocument ??
+          dotenv.env['cedula'] ??
+          globals.loggedInUserDocument ??
+          'sin_cedula';
+
+      request.fields['ownerDocument'] = documentToUse;
 
       if (_capturedImages.isNotEmpty) {
         request.files.add(
@@ -123,28 +134,28 @@ class _CameraScreenState extends State<CameraScreen> {
           context: context,
           builder:
               (_) => AlertDialog(
-                title: Text('CV generado'),
-                content: Text('Puedes descargar tu archivo generado.'),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: Text('Cerrar'),
-                  ),
-                  TextButton(
-                    onPressed: () async {
-                      final launched = await OpenFile.open(downloadUrl);
-                      if (launched.type == ResultType.noAppToOpen) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('No se pudo abrir el archivo'),
-                          ),
-                        );
-                      }
-                    },
-                    child: Text('Descargar .docx'),
-                  ),
-                ],
+            title: Text('CV generado'),
+            content: Text('Puedes descargar tu archivo generado.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('Cerrar'),
               ),
+              TextButton(
+                onPressed: () async {
+                  final launched = await OpenFile.open(downloadUrl);
+                  if (launched.type == ResultType.noAppToOpen) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('No se pudo abrir el archivo'),
+                      ),
+                    );
+                  }
+                },
+                child: Text('Descargar .docx'),
+              ),
+            ],
+          ),
         );
       } else {
         throw Exception('Error: ${response.statusCode} - $responseBody');
