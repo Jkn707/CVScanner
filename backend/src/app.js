@@ -58,4 +58,12 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: 'Error interno del servidor', error: err.message });
 });
 
+// Modified section of app.js to add templates routes
+
+try {
+  const templatesRoutes = require('./routes/templates');
+  app.use('/api/templates', templatesRoutes);
+} catch (error) {
+  console.error('No se pudo cargar el archivo de rutas templates:', error.message);
+}
 module.exports = app;

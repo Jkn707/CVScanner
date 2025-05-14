@@ -9,11 +9,11 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:open_file/open_file.dart';
 import '../globals.dart' as globals;
+import '../screens/template_selection_screen.dart';
 
 // Update the constructor in lib/screens/camera_screen.dart
 class CameraScreen extends StatefulWidget {
-  final String? ownerDocument;  // Add this parameter
-
+  final String? ownerDocument; // Add this parameter
   const CameraScreen({Key? key, this.ownerDocument}) : super(key: key);
 
   @override
@@ -88,6 +88,8 @@ class _CameraScreenState extends State<CameraScreen> {
     }
   }
 
+  // Update for camera_screen.dart - modify _processAllAndSendToAI() method
+
   Future<void> _processAllAndSendToAI() async {
     if (_extractedTexts.isEmpty) return;
 
@@ -104,7 +106,8 @@ class _CameraScreenState extends State<CameraScreen> {
       request.fields['combinedText'] = combinedText;
 
       // Use the ownerDocument from widget if available, otherwise use from dotenv or globals
-      final documentToUse = widget.ownerDocument ??
+      final documentToUse =
+          widget.ownerDocument ??
           dotenv.env['cedula'] ??
           globals.loggedInUserDocument ??
           'sin_cedula';
@@ -127,34 +130,11 @@ class _CameraScreenState extends State<CameraScreen> {
         final jsonResponse = json.decode(responseBody);
         final resumeId = jsonResponse['resume']['id'];
 
-        final downloadUrl =
-            'http://${dotenv.env['ip']}/api/resumes/download/$resumeId';
-
-        showDialog(
-          context: context,
-          builder:
-              (_) => AlertDialog(
-            title: Text('CV generado'),
-            content: Text('Puedes descargar tu archivo generado.'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text('Cerrar'),
-              ),
-              TextButton(
-                onPressed: () async {
-                  final launched = await OpenFile.open(downloadUrl);
-                  if (launched.type == ResultType.noAppToOpen) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('No se pudo abrir el archivo'),
-                      ),
-                    );
-                  }
-                },
-                child: Text('Descargar .docx'),
-              ),
-            ],
+        // Navigate to the template selection screen
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => TemplateSelectionScreen(resumeId: resumeId),
           ),
         );
       } else {
