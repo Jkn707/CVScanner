@@ -1,0 +1,120 @@
+{
+  "fullName": "Juan Andrés Montoya Galeano",
+  "profession": "Ingeniería de Sistemas",
+  "summary": "Ingeniero de Sistemas con conocimientos en Python, C+, C y Java. Experiencia en desarrollo web con frameworks como Django y Flask, manejo de estructuras, manejo y análisis de datos en MySQL, SQLite y MongoDB. Experiencia en despliegue en Google Cloud y AWS. Análisis de negocio con enfoque a la automatización de procesos. Interés marcado y proyección en el área relacionada al Machine Learning/inteligencia Artificial. Habilidades como el pensamiento crítico, adaptabilidad, recursividad y facilidad para aprender apoyan el ejercicio de mis labores técnicas. Y habilidades como la empatía, asertividad, amabilidad, y capacidad tanto de seguir instrucciones como de liderar según sea necesario, refuerzan mi impacto en un contexto de trabajo en equipo.",
+  "contact": {
+    "address": "Medellín",
+    "email": "jamontoya2@eafit.edu.co",
+    "website": "https://www.linkedin.com/in/iuan-montoya-649688260/"
+  },
+  "expertise": [
+    "Python",
+    "C+",
+    "C",
+    "Java",
+    "Django",
+    "Flask",
+    "MySQL",
+    "SQLite",
+    "MongoDB",
+    "Google Cloud",
+    "AWS",
+    "Machine Learning",
+    "Inteligencia Artificial",
+    "Desarrollo Web",
+    "Automatización de Procesos"
+  ],
+  "keyAchievements": [
+    "Desarrollo de CorpFinder",
+    "Desarrollo de TechNest",
+    "Desarrollo de CVScanner",
+    "Análisis de negocio y concepto de automatización para Cueros Invatam"
+  ],
+  "experience": [
+    {
+      "jobTitle": "Machine Learning /Deep Learning and Data Science practice projects",
+      "company": "",
+      "startDate": "",
+      "endDate": "",
+      "responsibilities": [
+        "Tecnologías utilizadas: Python, SKLearn, Numpy, Pandas, Matplotlib, Tensorflow"
+      ]
+    },
+    {
+      "jobTitle": "CorpFinder",
+      "company": "Plataforma de recopilación de opiniones de empleados de distintas empresas",
+      "startDate": "2023",
+      "endDate": "",
+      "responsibilities": [
+        "Conocimiento adquirido en Webscraping, Python, HTML, CSS, OpenAl API (NLP), DevOps"
+      ]
+    },
+    {
+      "jobTitle": "TechNest",
+      "company": "Concepto de tienda online con sistema de reviews y calificación de productos",
+      "startDate": "2024",
+      "endDate": "",
+      "responsibilities": [
+        "Conocimiento adquirido en Docker, Google Cloud, HTML, CSS, Python"
+      ]
+    },
+    {
+      "jobTitle": "CVScanner",
+      "company": "Aplicación móvil de escaneo de hojas de vida en puntos SuperGiros y conexión directa con Magneto",
+      "startDate": "",
+      "endDate": "En Curso",
+      "responsibilities": [
+        "Tecnologías utilizadas: Dart, C++, Javascript, Android Studio, OpenAl API"
+      ]
+    },
+    {
+      "jobTitle": "Análisis de negocio y concepto de automatización para procesa de recepción de pedidos para Cueros Invatam",
+      "company": "",
+      "startDate": "2024",
+      "endDate": "",
+      "responsibilities": [
+        "Tecnologías utilizadas: PowerAutomate, Make RPA"
+      ]
+    }
+  ],
+  "education": [
+    {
+      "degree": "Desarrollo Web con PHP",
+      "institution": "SENA",
+      "startDate": "2023",
+      "endDate": "2023",
+      "details": "100%"
+    },
+    {
+      "degree": "Curso Javascript",
+      "institution": "Udemy",
+      "startDate": "2022",
+      "endDate": "2022",
+      "details": ""
+    },
+    {
+      "degree": "Curso Bases de Datos y SQL",
+      "institution": "Udemy",
+      "startDate": "",
+      "endDate": "",
+      "details": ""
+    },
+    {
+      "degree": "Bachiller Académico",
+      "institution": "Colegio Calasanz Medellín",
+      "startDate": "2008",
+      "endDate": "2020",
+      "details": ""
+    },
+    {
+      "degree": "Ingeniería de Sistemas",
+      "institution": "EAFIT",
+      "startDate": "2021",
+      "endDate": "en curso",
+      "details": ""
+    }
+  ],
+  "languages": [],
+  "certifications": [],
+  "awards": []
+}
