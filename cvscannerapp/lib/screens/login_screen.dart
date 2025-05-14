@@ -1,10 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'scan_screen.dart';
-import 'register_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import '../globals.dart' as globals;
+import '../globals.dart'; // Import globals.dart to set loggedInUserDocument
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -12,45 +10,60 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController _documentController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  String _document = '';
+  String _password = '';
+  bool _isLoading = false;
+  bool _obscurePassword = true;
 
-  @override
-  void dispose() {
-    _documentController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
+  Future<void> _login() async {
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+      setState(() {
+        _isLoading = true;
+      });
 
-  Future<void> _loginUser(BuildContext context) async {
-    final url = Uri.parse('http://${dotenv.env['ip']}/api/users/login');
+      try {
+        final ip = dotenv.env['ip'] ?? 'localhost:4000';
+        final response = await http.post(
+          Uri.parse('http://$ip/api/users/login'),
+          headers: {'Content-Type': 'application/json'},
+          body: json.encode({'document': _document, 'password': _password}),
+        );
 
-    final response = await http.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        "document": _documentController.text.trim(),
-        "password": _passwordController.text,
-      }),
-    );
+        setState(() {
+          _isLoading = false;
+        });
 
-    if (response.statusCode == 200) {
-      // Guardar documento del usuario logueado
-      globals.loggedInUserDocument = _documentController.text.trim();
+        if (response.statusCode == 200) {
+          // Set the global loggedInUserDocument variable
+          loggedInUserDocument = _document;
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Inicio de sesión exitoso')));
+          // Print for debugging
+          print('Usuario conectado con documento: $loggedInUserDocument');
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => ScanScreen()),
-      );
-    } else {
-      final data = jsonDecode(response.body);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(data['message'] ?? 'Error al iniciar sesión')),
-      );
+          Navigator.pushReplacementNamed(context, '/home');
+        } else {
+          final errorData = json.decode(response.body);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(errorData['message'] ?? 'Error al iniciar sesión'),
+            ),
+          );
+        }
+      } catch (e) {
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Error de conexión. Verifica tu conexión a internet o el servidor.',
+            ),
+          ),
+        );
+        print('Error de login: $e');
+      }
     }
   }
 
@@ -60,124 +73,128 @@ class _LoginScreenState extends State<LoginScreen> {
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage("assets/images/background.png"),
+            image: AssetImage('assets/images/background1.jpg'),
             fit: BoxFit.cover,
           ),
         ),
         child: Center(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 30),
+          child: SingleChildScrollView(
+            padding: EdgeInsets.all(20),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  padding: EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(20),
                   ),
+                  padding: EdgeInsets.all(20),
+                  width: double.infinity,
                   child: Column(
                     children: [
-                      SizedBox(height: 50),
                       Image.asset(
                         'assets/images/logo_cvscanner.png',
                         height: 80,
                       ),
-                      SizedBox(height: 15),
+                      SizedBox(height: 30),
                       Text(
-                        '¡Inicia Sesión!',
-                        textAlign: TextAlign.center,
+                        'Iniciar Sesión',
                         style: TextStyle(
-                          fontSize: 24,
+                          fontSize: 22,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      SizedBox(height: 5),
-                      Text(
-                        'Por favor, ingresa tus credenciales para continuar',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 14, color: Colors.black54),
+                      SizedBox(height: 20),
+                      Form(
+                        key: _formKey,
+                        child: Column(
+                          children: [
+                            TextFormField(
+                              decoration: InputDecoration(
+                                labelText: 'Documento',
+                                border: OutlineInputBorder(),
+                                prefixIcon: Icon(Icons.person),
+                              ),
+                              keyboardType: TextInputType.number,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Por favor ingresa tu número de documento';
+                                }
+                                return null;
+                              },
+                              onSaved: (value) {
+                                _document = value!;
+                              },
+                            ),
+                            SizedBox(height: 20),
+                            TextFormField(
+                              decoration: InputDecoration(
+                                labelText: 'Contraseña',
+                                border: OutlineInputBorder(),
+                                prefixIcon: Icon(Icons.lock),
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    _obscurePassword
+                                        ? Icons.visibility
+                                        : Icons.visibility_off,
+                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      _obscurePassword = !_obscurePassword;
+                                    });
+                                  },
+                                ),
+                              ),
+                              obscureText: _obscurePassword,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Por favor ingresa tu contraseña';
+                                }
+                                return null;
+                              },
+                              onSaved: (value) {
+                                _password = value!;
+                              },
+                            ),
+                            SizedBox(height: 30),
+                            SizedBox(
+                              width: double.infinity,
+                              height: 50,
+                              child: ElevatedButton(
+                                onPressed: _isLoading ? null : _login,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Color(0xFF0D47A1),
+                                  foregroundColor: Colors.white,
+                                ),
+                                child:
+                                    _isLoading
+                                        ? CircularProgressIndicator(
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                                Colors.white,
+                                              ),
+                                        )
+                                        : Text('INGRESAR'),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                       SizedBox(height: 20),
-                      SizedBox(
-                        width: 350,
-                        child: TextField(
-                          controller: _documentController,
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            labelText: 'Número de Documento',
-                            filled: true,
-                            fillColor: Colors.grey[200],
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(30),
-                            ),
-                            labelStyle: TextStyle(color: Colors.black),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text('¿No tienes una cuenta?'),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pushNamed(context, '/register');
+                            },
+                            child: Text('Registrarse'),
                           ),
-                          style: TextStyle(color: Colors.black),
-                        ),
-                      ),
-                      SizedBox(height: 15),
-                      SizedBox(
-                        width: 350,
-                        child: TextField(
-                          controller: _passwordController,
-                          obscureText: true,
-                          decoration: InputDecoration(
-                            labelText: 'Contraseña',
-                            filled: true,
-                            fillColor: Colors.grey[200],
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(30),
-                            ),
-                            labelStyle: TextStyle(color: Colors.black),
-                          ),
-                          style: TextStyle(color: Colors.black),
-                        ),
+                        ],
                       ),
                       SizedBox(height: 20),
-                      ElevatedButton(
-                        onPressed: () => _loginUser(context),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue[900],
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          padding: EdgeInsets.symmetric(
-                            vertical: 12,
-                            horizontal: 30,
-                          ),
-                        ),
-                        child: Text(
-                          'Iniciar Sesión',
-                          style: TextStyle(fontSize: 16, color: Colors.white),
-                        ),
-                      ),
-                      SizedBox(height: 10),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => RegisterScreen(),
-                            ),
-                          );
-                        },
-                        child: Text(
-                          '¿No tienes una cuenta? Regístrate aquí',
-                          style: TextStyle(
-                            color: Colors.blue[900],
-                            fontSize: 14,
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 40),
-                      Align(
-                        alignment: Alignment.bottomRight,
-                        child: Image.asset(
-                          'assets/images/logo_magneto.png',
-                          height: 50,
-                        ),
-                      ),
+                      Image.asset('assets/images/logo_magneto.png', height: 40),
                     ],
                   ),
                 ),
