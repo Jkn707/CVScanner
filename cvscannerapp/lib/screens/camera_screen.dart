@@ -132,15 +132,21 @@ class _CameraScreenState extends State<CameraScreen> {
         final jsonResponse = json.decode(responseBody);
         final resumeId = jsonResponse['resume']['id'];
 
-        final downloadUrl =
+        final downloadDocxUrl =
             'http://${dotenv.env['ip']}/api/resumes/download/$resumeId';
+        final downloadPdfUrl =
+            jsonResponse['resume']['downloadPdfUrl'] != null
+                ? 'http://${dotenv.env['ip']}${jsonResponse['resume']['downloadPdfUrl']}'
+                : null;
 
         showDialog(
           context: context,
           builder:
               (_) => AlertDialog(
                 title: Text('CV generado'),
-                content: Text('Puedes descargar tu archivo generado.'),
+                content: Text(
+                  'Puedes descargar tu archivo generado en formato DOCX o PDF.',
+                ),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.pop(context),
@@ -148,17 +154,31 @@ class _CameraScreenState extends State<CameraScreen> {
                   ),
                   TextButton(
                     onPressed: () async {
-                      final launched = await OpenFile.open(downloadUrl);
+                      final launched = await OpenFile.open(downloadDocxUrl);
                       if (launched.type == ResultType.noAppToOpen) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('No se pudo abrir el archivo'),
+                            content: Text('No se pudo abrir el archivo DOCX'),
                           ),
                         );
                       }
                     },
                     child: Text('Descargar .docx'),
                   ),
+                  if (downloadPdfUrl != null)
+                    TextButton(
+                      onPressed: () async {
+                        final launched = await OpenFile.open(downloadPdfUrl);
+                        if (launched.type == ResultType.noAppToOpen) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('No se pudo abrir el archivo PDF'),
+                            ),
+                          );
+                        }
+                      },
+                      child: Text('Descargar PDF'),
+                    ),
                 ],
               ),
         );

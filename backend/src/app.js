@@ -42,6 +42,13 @@ try {
   console.error('No se pudo cargar el archivo de rutas docx:', error.message);
 }
 
+try {
+  const pdfRoutes = require('./routes/pdf');
+  app.use('/api/pdf', pdfRoutes);
+} catch (error) {
+  console.error('No se pudo cargar el archivo de rutas pdf:', error.message);
+}
+
 // Ruta de prueba para verificar el backend
 app.get('/', (req, res) => {
   res.send('Servidor Backend CVscanner funcionando correctamente 🚀');

@@ -1,0 +1,114 @@
+{
+  "fullName": "Juan Andrés Montoya Galeano",
+  "profession": "Ingeniero de Sistemas",
+  "summary": "Ingeniero de Sistemas con conocimientos en Python, C+, C, y Java. Experiencia en desarrollo web con frameworks como Django y Flask, manejo de estructuras, manejo y análisis de datos en MysQL, SQLite y MongoDB. Experiencia en despliege en Google Cloud y AWS. Análisis de negocio con enfogque a la automatización de procesos. Interés marcado y proyección en el área relacionada al Machine Learning/inteligencia Artificial. Habilidades como el pensamiento crítico, adaptabilidad, recursividad y facilidad para aprender apoyan el ejercicio de mis labores técnicas. Yhabilidades como la empatía, asertividad, amabilidad, y capacidad tanto de seguir instrut ucciones como de liderar según sea necesario, refuerzan mi impacto en un contexto de trabajo en equipo.",
+  "contact": {
+    "address": "Medellin",
+    "email": "jamontoya2@eafit.edu.co",
+    "website": "https://www.linkedin.com/in/iuan-montoya-649688260/"
+  },
+  "expertise": [
+    "Python",
+    "C+",
+    "C",
+    "Java",
+    "Django",
+    "Flask",
+    "MySQL",
+    "SQLite",
+    "MongoDB",
+    "Google Cloud",
+    "AWS",
+    "Automatización de procesos",
+    "Machine Learning",
+    "Inteligencia Artificial"
+  ],
+  "keyAchievements": [],
+  "experience": [
+    {
+      "jobTitle": "Concepto de plataforma para intercambio de empleados entre empresas",
+      "company": "Talent-Swap",
+      "startDate": "2022",
+      "endDate": "",
+      "responsibilities": [
+        "HTML",
+        "Python",
+        "Django"
+      ]
+    },
+    {
+      "jobTitle": "Plataforma de recopilación de opiniones de empleados de distintas empresas",
+      "company": "CorpElnder",
+      "startDate": "2023",
+      "endDate": "",
+      "responsibilities": [
+        "Webscraping",
+        "Python",
+        "HTML",
+        "CSS",
+        "OpenAl API (NLP)",
+        "DevOps"
+      ]
+    },
+    {
+      "jobTitle": "Concepto de tienda online con sistema de reviews y calificación de productos",
+      "company": "TechNest",
+      "startDate": "2024",
+      "endDate": "",
+      "responsibilities": [
+        "Docker",
+        "Google Cloud",
+        "HTML",
+        "CSS",
+        "Python"
+      ]
+    },
+    {
+      "jobTitle": "Aplicación móvil de escaneo de hojas de vida en puntos SuperGiros y conexión directa con Magneto",
+      "company": "CVSannet",
+      "startDate": "En curso",
+      "endDate": "",
+      "responsibilities": []
+    }
+  ],
+  "education": [
+    {
+      "degree": "Desarrollo Web con PHP",
+      "institution": "SENA",
+      "startDate": "2023",
+      "endDate": "",
+      "details": ""
+    },
+    {
+      "degree": "Curso Javascript",
+      "institution": "Udemy",
+      "startDate": "2022",
+      "endDate": "",
+      "details": "OpenAl 80%"
+    },
+    {
+      "degree": "Curso Bases de Datos y SQL",
+      "institution": "Udemy",
+      "startDate": "2022",
+      "endDate": "",
+      "details": ""
+    },
+    {
+      "degree": "Bachiller Académico",
+      "institution": "Colegio Calasanz Medellín",
+      "startDate": "2008",
+      "endDate": "2020",
+      "details": ""
+    },
+    {
+      "degree": "Ingeniería de Sistemas",
+      "institution": "EAFIT",
+      "startDate": "2021",
+      "endDate": "en curso",
+      "details": ""
+    }
+  ],
+  "languages": [],
+  "certifications": [],
+  "awards": []
+}

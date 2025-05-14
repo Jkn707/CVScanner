@@ -9,6 +9,7 @@ const Resume = require('../models/Resume');
 const User = require('../models/User');
 const generateResumeDocx = require('../services/generateDocx');
 const AIAnalysisService = require('../services/aiAnalysis');
+const PDFService = require('../services/pdfService');
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -53,13 +54,28 @@ router.post('/upload', upload.single('image'), async (req, res) => {
 
     await resume.save();
 
-    const formatted = await AIAnalysisService.analyzeResume(extractedText);
+    const { data: formatted } = await AIAnalysisService.analyzeResume(extractedText);
+
+    // Generar DOCX
     const docxFileName = `cv_${ownerDocument}_${resume._id}.docx`;
     const docxPath = path.resolve(__dirname, '../output', docxFileName);
     generateResumeDocx(formatted, docxPath);
 
+    // Generar PDF con APITemplate
+    let pdfPath = '';
+    let pdfUrl = '';
+    try {
+      const pdfResult = await PDFService.generatePDF(formatted, ownerDocument);
+      pdfPath = pdfResult.filePath;
+      pdfUrl = pdfResult.pdfUrl;
+    } catch (pdfError) {
+      console.error('Error generando PDF:', pdfError);
+    }
+
     resume.formatted = formatted;
     resume.generatedDocxPath = docxPath;
+    resume.pdfPath = pdfPath;
+    resume.pdfUrl = pdfUrl;
     await resume.save();
 
     res.status(201).json({
@@ -67,7 +83,8 @@ router.post('/upload', upload.single('image'), async (req, res) => {
       resume: {
         id: resume._id,
         extractedText,
-        downloadUrl: `/api/resumes/download/${resume._id}`
+        downloadDocxUrl: `/api/resumes/download/${resume._id}`,
+        downloadPdfUrl: pdfUrl ? `/api/pdf/download/${resume._id}` : null
       }
     });
   } catch (error) {
@@ -87,6 +104,21 @@ router.get('/download/:id', async (req, res) => {
   } catch (error) {
     console.error('Error al descargar el documento:', error);
     res.status(500).json({ message: 'Error interno al intentar descargar', error: error.message });
+  }
+});
+
+// GET /api/resumes/downloadPdf/:id - Descargar PDF
+router.get('/downloadPdf/:id', async (req, res) => {
+  try {
+    const resume = await Resume.findById(req.params.id);
+    if (!resume || !resume.pdfPath) {
+      return res.status(404).json({ message: 'PDF no encontrado para este CV' });
+    }
+
+    res.download(resume.pdfPath);
+  } catch (error) {
+    console.error('Error al descargar el PDF:', error);
+    res.status(500).json({ message: 'Error interno al intentar descargar el PDF', error: error.message });
   }
 });
 

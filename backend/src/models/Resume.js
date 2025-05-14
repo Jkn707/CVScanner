@@ -19,6 +19,8 @@ const resumeSchema = new Schema({
     required: false // opcional si solo se guarda el estructurado
   },
   fileName: String,
+  pdfPath: String,
+  pdfUrl: String,
   analysis: {
     message: String,
     analyzedAt: {

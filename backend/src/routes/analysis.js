@@ -1,8 +1,8 @@
-// routes/analysis.js
 const express = require('express');
 const router  = express.Router();
 const Resume = require('../models/Resume');
 const AIAnalysisService = require('../services/aiAnalysis');
+const PDFService = require('../services/pdfService');
 
 
 // POST /api/analysis/:resumeId - Analiza y estructura el CV
@@ -34,12 +34,38 @@ router.post('/:resumeId', async (req, res) => {
       }
     });
 
-    res.status(200).json({
-      message: 'Resume analyzed and structured successfully',
-      resumeId,
-      formatted: formattedData,
-      jsonFile: filePath
-    });
+    // Generamos PDF con APITemplate
+    try {
+      const { filePath: pdfPath, pdfUrl } = await PDFService.generatePDF(
+        formattedData,
+        resume.ownerDocument
+      );
+
+      // Actualizamos el documento con la info del PDF
+      await Resume.findByIdAndUpdate(resumeId, {
+        pdfPath,
+        pdfUrl
+      });
+
+      res.status(200).json({
+        message: 'Resume analyzed, structured and PDF generated successfully',
+        resumeId,
+        formatted: formattedData,
+        jsonFile: filePath,
+        pdfUrl,
+        pdfDownloadUrl: `/api/pdf/download/${resumeId}`
+      });
+    } catch (pdfError) {
+      console.error('Error generating PDF:', pdfError);
+      // Aunque falle el PDF, devolvemos éxito en el análisis
+      res.status(200).json({
+        message: 'Resume analyzed and structured successfully (PDF generation failed)',
+        resumeId,
+        formatted: formattedData,
+        jsonFile: filePath,
+        pdfError: pdfError.message
+      });
+    }
   } catch (error) {
     console.error('Error during resume analysis:', error);
 
